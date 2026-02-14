@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Scan SampahMu! - Greenly</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        html, body { height: 100%; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+
+        /* Page transitions */
+        .page { position: fixed; inset: 0; opacity: 0; pointer-events: none; transition: opacity .35s ease, transform .35s ease; transform: translateY(6px); overflow-y: auto; z-index: 1; }
+        .page.active { opacity: 1; pointer-events: all; transform: translateY(0); z-index: 10; }
+
+        /* Fade-up stagger */
+        @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+        .fu { animation: fadeUp .5s ease both; }
+        .fu1 { animation: fadeUp .5s ease .07s both; }
+        .fu2 { animation: fadeUp .5s ease .14s both; }
+        .fu3 { animation: fadeUp .5s ease .21s both; }
+        .fu4 { animation: fadeUp .5s ease .28s both; }
+
+        /* Drop zone active */
+        .drop-on { border-color: #22c55e !important; background: #f0fdf4 !important; }
+
+        /* Camera label */
+        @keyframes camLbl { 0%,55%{opacity:1} 100%{opacity:0;pointer-events:none} }
+        .cam-lbl { animation: camLbl 2.4s ease forwards; }
+
+        /* Toast */
+        .toast-box { transform: translateX(-50%) translateY(70px); transition: transform .35s cubic-bezier(.34,1.56,.64,1); }
+        .toast-box.on { transform: translateX(-50%) translateY(0); }
+
+        /* Modal */
+        .mdl-bg { transition: opacity .25s ease; }
+        .mdl-bg.on { opacity: 1; pointer-events: all; }
+        .mdl-card { transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .2s ease; transform: scale(.94); opacity: 0; }
+        .mdl-bg.on .mdl-card { transform: scale(1); opacity: 1; }
+
+        /* Capture ring */
+        .cap-ring { position: relative; }
+        .cap-ring::before { content:''; position:absolute; inset:-5px; border:3px solid rgba(255,255,255,.35); border-radius:50%; transition:all .15s ease; }
+        .cap-ring:active::before { inset:-2px; border-color:rgba(255,255,255,.65); }
+
+        /* Switch camera */
+        .sw-cam:hover svg { transform: rotate(180deg); }
+        .sw-cam svg { transition: transform .5s cubic-bezier(.16,1,.3,1); }
+
+        /* File enter */
+        @keyframes fileSlide { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:translateX(0)} }
+        .file-slide { animation: fileSlide .3s ease both; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+
+        /* Confidence bar */
+        .conf-fill { transition: width 1.2s cubic-bezier(.16,1,.3,1); }
+    </style>
+</head>
+<body class="font-sans bg-[#f8faf5] text-gray-900 antialiased">
+
+<!-- ============================================================ -->
+<!--                       LANDING PAGE                           -->
+<!-- ============================================================ -->
+<section id="pg-landing" class="page active">
+    <div class="min-h-full flex flex-col" style="background:linear-gradient(175deg,#d1fae5 0%,#ecfdf5 35%,#f8faf5 70%)">
+
+        <!-- Nav -->
+        <nav class="px-6 pt-6 pb-2 flex items-center justify-between">
+            <div class="flex items-center gap-1.5 fu">
+                <span class="text-xl">🌿</span>
+                <span class="text-lg font-extrabold tracking-tight text-gray-900">Greenly</span>
+            </div>
+        </nav>
+
+        <!-- Hero -->
+        <div class="flex-1 flex flex-col items-center justify-center px-6 pb-12 text-center">
+            <!-- Scan icon -->
+            <div class="fu1 mb-6 w-16 h-16 rounded-2xl bg-white shadow-md shadow-green-600/10 flex items-center justify-center">
+                <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                </svg>
+            </div>
+
+            <h1 class="fu2 text-[2.6rem] sm:text-5xl md:text-6xl font-extrabold leading-[1.1] tracking-tight mb-4">
+                Scan<br>
+                <span class="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">SampahMu!</span>
+            </h1>
+
+            <p class="fu3 text-gray-500 text-sm sm:text-base max-w-xs mx-auto leading-relaxed mb-8">
+                Identifikasi jenis sampahmu secara instan dengan AI, dan temukan cara terbaik mendaur ulangnya.
+            </p>
+
+            <button onclick="nav('pg-upload')" class="fu3 group inline-flex items-center gap-2.5 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-[15px] rounded-2xl shadow-lg shadow-green-600/25 hover:shadow-xl hover:shadow-green-600/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[.98] transition-all duration-200">
+                Mulai Scan
+                <svg class="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+
+            <!-- Category pills -->
+            <div class="fu4 mt-10 flex flex-wrap justify-center gap-2">
+                <span class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-white/80 text-xs font-semibold text-amber-700 shadow-sm hover:-translate-y-0.5 transition-transform duration-200 cursor-default select-none">📦 Kardus</span>
+                <span class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-white/80 text-xs font-semibold text-cyan-700 shadow-sm hover:-translate-y-0.5 transition-transform duration-200 cursor-default select-none">🫙 Kaca</span>
+                <span class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-white/80 text-xs font-semibold text-slate-600 shadow-sm hover:-translate-y-0.5 transition-transform duration-200 cursor-default select-none">⚙️ Logam</span>
+                <span class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-white/80 text-xs font-semibold text-green-700 shadow-sm hover:-translate-y-0.5 transition-transform duration-200 cursor-default select-none">📄 Kertas</span>
+                <span class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-white/80 text-xs font-semibold text-rose-600 shadow-sm hover:-translate-y-0.5 transition-transform duration-200 cursor-default select-none">♻️ Plastik</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 pb-5 text-center">
+            <p class="text-[11px] text-gray-400 font-medium">Powered by Teachable Machine</p>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!--                       UPLOAD PAGE                            -->
+<!-- ============================================================ -->
+<section id="pg-upload" class="page">
+    <div class="min-h-full flex flex-col bg-[#f8faf5]">
+
+        <!-- Sticky header -->
+        <header class="sticky top-0 z-20 px-5 py-3.5 flex items-center gap-3 bg-white/85 backdrop-blur-md border-b border-gray-100">
+            <button onclick="nav('pg-landing')" class="w-9 h-9 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div>
+                <h2 class="text-sm font-bold text-gray-900 leading-tight">Unggah Gambar</h2>
+                <p class="text-[11px] text-gray-400 leading-tight">Pilih file atau gunakan kamera</p>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="flex-1 flex items-start justify-center p-5">
+            <div class="w-full max-w-md fu">
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-5 sm:p-6">
+
+                        <!-- Drop zone -->
+                        <div id="drop-zone" class="border-2 border-dashed border-gray-200 hover:border-green-400 rounded-2xl p-8 text-center cursor-pointer transition-colors duration-200 group">
+                            <input type="file" id="file-input" class="hidden" accept="image/jpeg,image/jpg,image/png,image/webp">
+                            <div class="mx-auto w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4 group-hover:bg-green-100 transition-colors">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                            </div>
+                            <p class="text-sm font-bold text-gray-800 mb-0.5">Jatuhkan file di sini</p>
+                            <p class="text-xs text-gray-400">atau klik untuk memilih</p>
+                            <p class="mt-3 text-[11px] text-gray-300 font-medium">JPG • PNG • WEBP</p>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="flex items-center gap-3 my-5">
+                            <div class="flex-1 h-px bg-gray-100"></div>
+                            <span class="text-[11px] text-gray-300 font-semibold uppercase tracking-widest">atau</span>
+                            <div class="flex-1 h-px bg-gray-100"></div>
+                        </div>
+
+                        <!-- Camera button -->
+                        <button id="btn-cam" type="button" class="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold text-sm border border-gray-100 transition-colors duration-200">
+                            <svg class="w-[18px] h-[18px] text-green-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+                            </svg>
+                            Buka Kamera
+                        </button>
+                    </div>
+
+                    <!-- File list area -->
+                    <div id="file-area" class="hidden border-t border-gray-50">
+                        <div class="p-5 sm:p-6">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">File Terpilih</p>
+                            <div id="file-list"></div>
+                            <button id="btn-analyze" type="button" class="mt-4 w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-sm rounded-xl shadow-md shadow-green-600/20 hover:shadow-lg hover:shadow-green-600/25 active:scale-[.98] transition-all duration-200">
+                                <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                Analisis Sampah
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!--                       CAMERA PAGE                            -->
+<!-- ============================================================ -->
+<section id="pg-camera" class="page">
+    <div class="h-full flex flex-col bg-black relative">
+        <div class="flex-1 relative flex items-center justify-center overflow-hidden">
+            <video id="cam-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+
+            <!-- Label -->
+            <div id="cam-label" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 px-4 py-2 rounded-full bg-black/50 backdrop-blur text-white/80 text-xs font-medium hidden"></div>
+
+            <!-- Top bar -->
+            <div class="absolute top-0 inset-x-0 z-30 px-5 pt-5 pb-14 flex items-center justify-between" style="background:linear-gradient(180deg,rgba(0,0,0,.45),transparent)">
+                <button id="btn-cam-back" type="button" class="w-10 h-10 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white hover:bg-white/25 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <button id="btn-sw-cam" type="button" class="sw-cam w-10 h-10 rounded-full bg-white/15 backdrop-blur flex items-center justify-center text-white hover:bg-white/25 transition-colors" title="Ganti Kamera">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                </button>
+            </div>
+
+            <!-- Bottom bar -->
+            <div class="absolute bottom-0 inset-x-0 z-30 flex items-center justify-center pb-10 pt-16" style="background:linear-gradient(0deg,rgba(0,0,0,.5),transparent)">
+                <button id="btn-capture" type="button" class="cap-ring w-[66px] h-[66px] rounded-full bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-transform duration-150">
+                    <div class="w-[52px] h-[52px] rounded-full bg-gradient-to-br from-green-400 to-emerald-600"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!--                       RESULT PAGE                            -->
+<!-- ============================================================ -->
+<section id="pg-result" class="page">
+    <div class="min-h-full flex flex-col bg-[#f8faf5]">
+
+        <!-- Header -->
+        <header class="sticky top-0 z-20 px-5 py-3.5 flex items-center gap-3 bg-white/85 backdrop-blur-md border-b border-gray-100">
+            <button onclick="backToUpload()" class="w-9 h-9 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div>
+                <h2 class="text-sm font-bold text-gray-900 leading-tight">Hasil Analisis</h2>
+                <p class="text-[11px] text-gray-400 leading-tight">Prediksi AI</p>
+            </div>
+        </header>
+
+        <!-- Result content -->
+        <div class="flex-1 flex items-start justify-center p-5">
+            <div class="w-full max-w-md fu">
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+
+                    <!-- Image -->
+                    <div class="relative">
+                        <img id="res-img" class="w-full aspect-[4/3] object-cover bg-gray-100" src="" alt="">
+                    </div>
+
+                    <!-- Info (flat, editorial — no nested boxes) -->
+                    <div class="p-6">
+
+                        <!-- Type -->
+                        <div class="flex items-center gap-4 mb-1">
+                            <div id="res-icon-box" class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0"></div>
+                            <div class="min-w-0">
+                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mb-0.5">Terdeteksi</p>
+                                <h3 id="res-name" class="text-xl font-extrabold leading-tight truncate"></h3>
+                            </div>
+                        </div>
+
+                        <!-- Colored line -->
+                        <div id="res-line" class="w-10 h-1 rounded-full mt-4 mb-5"></div>
+
+                        <!-- Confidence -->
+                        <div class="mb-2 flex items-baseline gap-2">
+                            <span id="res-conf-num" class="text-3xl font-extrabold leading-none">0%</span>
+                            <span class="text-sm text-gray-400 font-medium">akurasi</span>
+                        </div>
+                        <div class="h-1 bg-gray-100 rounded-full overflow-hidden mb-6">
+                            <div id="res-conf-bar" class="conf-fill h-full rounded-full" style="width:0%"></div>
+                        </div>
+
+                        <!-- Tip — left-border callout, not a box -->
+                        <div id="res-tip" class="border-l-[3px] border-green-400 pl-4 mb-6">
+                            <p class="text-xs font-bold text-green-700 mb-1 flex items-center gap-1">
+                                💡 Tips Daur Ulang
+                            </p>
+                            <p id="res-tip-text" class="text-[13px] text-gray-500 leading-relaxed"></p>
+                        </div>
+
+                        <!-- CTA -->
+                        <button onclick="backToUpload()" class="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-sm rounded-xl shadow-md shadow-green-600/20 hover:shadow-lg active:scale-[.98] transition-all duration-200">
+                            <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+                            </svg>
+                            Scan Lagi
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!--                      CONFIRM MODAL                           -->
+<!-- ============================================================ -->
+<div id="mdl-confirm" class="mdl-bg fixed inset-0 z-[100] flex items-center justify-center p-5 bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none">
+    <div class="mdl-card w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-xl">
+        <div class="relative">
+            <button id="btn-mdl-x" type="button" class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/30 backdrop-blur flex items-center justify-center text-white hover:bg-black/50 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <img id="mdl-img" src="" alt="" class="w-full aspect-[4/3] object-cover bg-gray-100">
+        </div>
+        <div class="p-5 text-center">
+            <p class="text-sm font-bold text-gray-900 mb-4">Apakah anda yakin kirim gambar ini?</p>
+            <div class="flex gap-3">
+                <button id="btn-retry" type="button" class="flex-1 py-3 rounded-xl text-sm font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-100 transition-colors">Coba Lagi</button>
+                <button id="btn-yes" type="button" class="flex-1 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:shadow-md transition-all">Ya, Kirim</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!--                      LOADING OVERLAY                         -->
+<!-- ============================================================ -->
+<div id="loading" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white/85 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="w-10 h-10 border-[3px] border-gray-200 border-t-green-500 rounded-full animate-spin mb-4"></div>
+    <p class="text-sm font-bold text-gray-900">Menganalisis...</p>
+    <p class="text-xs text-gray-400 mt-0.5">Memproses gambar dengan AI</p>
+</div>
+
+<!-- ============================================================ -->
+<!--                         TOAST                                -->
+<!-- ============================================================ -->
+<div id="toast" class="toast-box fixed bottom-6 left-1/2 z-[300] px-5 py-2.5 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap"></div>
+
+<!-- Hidden canvas for prediction -->
+<canvas id="p-canvas" width="224" height="224" class="hidden"></canvas>
+
+<!-- ============================================================ -->
+<!--                        SCRIPTS                               -->
+<!-- ============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+<script>
+/* ── State ── */
+let model = null, curPage = 'pg-landing', camStream = null, facing = 'environment';
+let capturedData = null, uploadedFile = null, uploadedURL = null;
+
+const WASTE = {
+    'Sampah Kardus':  { emoji:'📦', color:'#d97706', bg:'#fef3c7', bar:'#f59e0b', tip:'Kardus dapat didaur ulang menjadi kertas baru, kotak, atau kerajinan tangan. Pastikan kardus kering dan bersih sebelum didaur ulang.' },
+    'Sampah Kaca':    { emoji:'🫙', color:'#0891b2', bg:'#cffafe', bar:'#06b6d4', tip:'Kaca dapat didaur ulang berulang kali tanpa kehilangan kualitas. Pisahkan berdasarkan warna, dan hindari mencampur dengan keramik atau porselen.' },
+    'Sampah Logam':   { emoji:'⚙️', color:'#6366f1', bg:'#e0e7ff', bar:'#818cf8', tip:'Logam seperti aluminium dan besi bisa dilebur dan dibentuk ulang. Mendaur ulang kaleng aluminium menghemat 95% energi dibanding produksi baru.' },
+    'Sampah Kertas':  { emoji:'📄', color:'#16a34a', bg:'#dcfce7', bar:'#22c55e', tip:'Kertas bisa didaur ulang hingga 5–7 kali. Mendaur ulang 1 ton kertas menyelamatkan sekitar 17 pohon dan 26.500 liter air.' },
+    'Sampah Plastik': { emoji:'♻️', color:'#e11d48', bg:'#ffe4e6', bar:'#f43f5e', tip:'Plastik dapat dibuat menjadi bahan bangunan, pakaian, dan furnitur. Kurangi plastik sekali pakai demi kelestarian lingkungan.' }
+};
+
+/* ── Selectors ── */
+const $ = id => document.getElementById(id);
+const dropZone = $('drop-zone'), fileInput = $('file-input');
+const fileArea = $('file-area'), fileList = $('file-list');
+const btnAnalyze = $('btn-analyze'), btnCam = $('btn-cam');
+const btnCamBack = $('btn-cam-back'), btnSwCam = $('btn-sw-cam'), btnCapture = $('btn-capture');
+const camVideo = $('cam-video'), camLabel = $('cam-label');
+const mdlConfirm = $('mdl-confirm'), mdlImg = $('mdl-img');
+const btnYes = $('btn-yes'), btnRetry = $('btn-retry'), btnMdlX = $('btn-mdl-x');
+const loadingEl = $('loading'), toastEl = $('toast');
+const pCanvas = $('p-canvas'), pCtx = pCanvas.getContext('2d');
+const resImg = $('res-img'), resIconBox = $('res-icon-box'), resName = $('res-name');
+const resLine = $('res-line'), resConfNum = $('res-conf-num'), resConfBar = $('res-conf-bar');
+const resTipText = $('res-tip-text');
+
+/* ── Model ── */
+async function loadModel() {
+    try {
+        model = await tmImage.load('./model.json', './metadata.json');
+        console.log('Model loaded (' + model.getTotalClasses() + ' classes)');
+    } catch(e) { console.error(e); toast('Gagal memuat model AI', true); }
+}
+loadModel();
+
+/* ── Navigation ── */
+function nav(id) {
+    const o = $(curPage), n = $(id);
+    if (o) o.classList.remove('active');
+    if (n) n.classList.add('active');
+    curPage = id;
+    if (id !== 'pg-camera') stopCam();
+}
+function backToUpload() { clearFile(); nav('pg-upload'); }
+
+/* ── Toast ── */
+let _tt = null;
+function toast(msg, err) {
+    toastEl.textContent = msg;
+    toastEl.className = 'toast-box fixed bottom-6 left-1/2 z-[300] px-5 py-2.5 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap '
+        + (err ? 'bg-red-500 text-white' : 'bg-gray-900 text-white');
+    clearTimeout(_tt);
+    requestAnimationFrame(() => { toastEl.classList.add('on'); _tt = setTimeout(() => toastEl.classList.remove('on'), 3000); });
+}
+
+/* ── Drag & Drop ── */
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragenter', e => { e.preventDefault(); dropZone.classList.add('drop-on'); });
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drop-on'); });
+dropZone.addEventListener('dragleave', e => { e.preventDefault(); if (!dropZone.contains(e.relatedTarget)) dropZone.classList.remove('drop-on'); });
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drop-on'); if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+/* ── File handling ── */
+const ALLOWED = ['image/jpeg','image/jpg','image/png','image/webp'];
+function handleFile(f) {
+    if (!ALLOWED.includes(f.type)) { toast('Format tidak didukung', true); return; }
+    clearFile();
+    uploadedFile = f;
+    uploadedURL = URL.createObjectURL(f);
+
+    const el = document.createElement('div');
+    el.className = 'file-slide flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100';
+    el.id = 'file-item';
+    el.innerHTML =
+        '<img class="w-14 h-14 rounded-xl object-cover border border-gray-100" src="'+uploadedURL+'">' +
+        '<div class="flex-1 min-w-0"><p class="text-xs font-bold text-gray-800 truncate">'+f.name+'</p><p class="text-[11px] text-gray-400 mt-0.5">'+fmtSize(f.size)+'</p></div>' +
+        '<button onclick="clearFile()" class="shrink-0 w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-400 transition-colors"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+
+    fileList.appendChild(el);
+    fileArea.classList.remove('hidden');
+    fileInput.value = '';
+}
+
+function clearFile() {
+    const it = $('file-item'); if (it) it.remove();
+    if (uploadedURL) { URL.revokeObjectURL(uploadedURL); uploadedURL = null; }
+    uploadedFile = null;
+    fileArea.classList.add('hidden');
+}
+
+function fmtSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(1) + ' MB';
+}
+
+/* ── Analyze uploaded file ── */
+btnAnalyze.addEventListener('click', async () => {
+    if (!uploadedURL) return;
+    showLoad();
+    try {
+        const img = new Image(); img.crossOrigin = 'anonymous';
+        await new Promise((r,j) => { img.onload=r; img.onerror=j; img.src=uploadedURL; });
+        const res = await predict(img);
+        showResult(uploadedURL, res);
+    } catch(e) { console.error(e); toast('Gagal menganalisis', true); }
+    finally { hideLoad(); }
+});
+
+/* ── Camera ── */
+btnCam.addEventListener('click', () => openCam());
+btnCamBack.addEventListener('click', () => nav('pg-upload'));
+btnSwCam.addEventListener('click', () => { facing = facing==='user'?'environment':'user'; openCam(); });
+btnCapture.addEventListener('click', capture);
+
+async function openCam() {
+    nav('pg-camera');
+    camLabel.textContent = 'Menginisialisasi kamera...';
+    camLabel.className = 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 px-4 py-2 rounded-full bg-black/50 backdrop-blur text-white/80 text-xs font-medium cam-lbl';
+    stopCam();
+    try {
+        camStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:facing, width:{ideal:1920}, height:{ideal:1080} }, audio:false });
+        camVideo.srcObject = camStream;
+        await new Promise(r => { camVideo.onloadedmetadata = r; });
+        camVideo.play();
+        camLabel.textContent = facing==='user'?'Kamera Depan':'Kamera Belakang';
+        camLabel.className = 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 px-4 py-2 rounded-full bg-black/50 backdrop-blur text-white/80 text-xs font-medium cam-lbl';
+    } catch(e) {
+        if (e.name === 'NotAllowedError') { toast('Akses kamera ditolak', true); nav('pg-upload'); return; }
+        try {
+            facing = facing==='user'?'environment':'user';
+            camStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:facing, width:{ideal:1280}, height:{ideal:720} }, audio:false });
+            camVideo.srcObject = camStream;
+            await camVideo.play();
+            camLabel.textContent = facing==='user'?'Kamera Depan':'Kamera Belakang';
+            camLabel.className = 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 px-4 py-2 rounded-full bg-black/50 backdrop-blur text-white/80 text-xs font-medium cam-lbl';
+        } catch(e2) { toast('Kamera tidak tersedia', true); nav('pg-upload'); }
+    }
+}
+function stopCam() { if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; } camVideo.srcObject=null; }
+
+function capture() {
+    if (!camStream) return;
+    const w=camVideo.videoWidth, h=camVideo.videoHeight;
+    if (!w||!h) return;
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    const ctx=c.getContext('2d');
+    if (facing==='user') { ctx.translate(w,0); ctx.scale(-1,1); }
+    ctx.drawImage(camVideo,0,0,w,h);
+    capturedData = c.toDataURL('image/jpeg',.92);
+    mdlImg.src = capturedData;
+    mdlConfirm.classList.add('on');
+}
+
+/* ── Modal ── */
+btnYes.addEventListener('click', async () => {
+    mdlConfirm.classList.remove('on');
+    showLoad();
+    try {
+        const img = new Image();
+        await new Promise((r,j) => { img.onload=r; img.onerror=j; img.src=capturedData; });
+        const res = await predict(img);
+        stopCam();
+        showResult(capturedData, res);
+    } catch(e) { console.error(e); toast('Gagal menganalisis', true); }
+    finally { hideLoad(); }
+});
+btnRetry.addEventListener('click', () => { mdlConfirm.classList.remove('on'); capturedData=null; });
+btnMdlX.addEventListener('click', () => { mdlConfirm.classList.remove('on'); capturedData=null; stopCam(); nav('pg-upload'); });
+
+/* ── Prediction ── */
+async function predict(img) {
+    if (!model) { await loadModel(); if (!model) throw new Error('No model'); }
+    pCtx.clearRect(0,0,224,224);
+    pCtx.drawImage(img,0,0,224,224);
+    let preds = await model.predict(pCanvas);
+    preds.sort((a,b) => b.probability - a.probability);
+    return { className: preds[0].className, probability: preds[0].probability };
+}
+
+/* ── Result ── */
+function showResult(imgSrc, pred) {
+    const w = WASTE[pred.className] || { emoji:'❓', color:'#6b7280', bg:'#f3f4f6', bar:'#9ca3af', tip:'Jenis sampah tidak dikenali.' };
+    const pct = (pred.probability * 100).toFixed(1);
+
+    resImg.src = imgSrc;
+    resIconBox.style.background = w.bg;
+    resIconBox.textContent = w.emoji;
+    resName.textContent = pred.className;
+    resName.style.color = w.color;
+    resLine.style.background = w.bar;
+    resConfBar.style.width = '0%';
+    resConfBar.style.background = w.bar;
+    resConfNum.textContent = '0%';
+    resConfNum.style.color = w.color;
+    resTipText.textContent = w.tip;
+
+    nav('pg-result');
+
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            resConfBar.style.width = pct + '%';
+            animNum(0, parseFloat(pct), 1100);
+        }, 300);
+    });
+}
+
+function animNum(s, e, d) {
+    const t0 = performance.now();
+    (function tick(t) {
+        const p = Math.min((t-t0)/d, 1), v = 1-Math.pow(1-p,3);
+        resConfNum.textContent = (s+(e-s)*v).toFixed(1) + '%';
+        if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+}
+
+/* ── Loading ── */
+function showLoad() { loadingEl.style.opacity='1'; loadingEl.style.pointerEvents='all'; }
+function hideLoad()  { loadingEl.style.opacity='0'; loadingEl.style.pointerEvents='none'; }
+
+/* ── Prevent global drag ── */
+document.body.addEventListener('dragover', e => e.preventDefault());
+document.body.addEventListener('drop', e => e.preventDefault());
+ </script>
+</body>
+</html>
